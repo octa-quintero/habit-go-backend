@@ -1,4 +1,7 @@
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { User } from 'module/users/entities/user.entity';
+import { Habit } from 'module/habits/entities/habit.entity';
+import { HabitRegister } from 'module/habit-register/entities/habit-register.entity';
 import dotenvoption from './dotenv.config';
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -11,7 +14,7 @@ export const dataSourceOptions: DataSourceOptions = {
   dropSchema: dotenvoption.DB_MIGRATE_DATA,
   synchronize: true,
   logging: false,
-  entities: [],
+  entities: [User, Habit, HabitRegister],
   subscribers: [],
   migrations: [],
 };
