@@ -42,7 +42,12 @@ export class UsersService {
       });
 
       // Guardado del usuario en la base de datos
-      return await this.userRepository.save(user);
+      const savedUser = await this.userRepository.save(user);
+
+      // Eliminar password de la respuesta
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword as User;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -84,7 +89,9 @@ export class UsersService {
       if (!user) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }
-      return user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword as User;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -131,7 +138,10 @@ export class UsersService {
 
       // Actualizar usuario
       const updatedUser = this.userRepository.merge(user, updateUserDto);
-      return await this.userRepository.save(updatedUser);
+      const savedUser = await this.userRepository.save(updatedUser);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword as User;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -158,7 +168,10 @@ export class UsersService {
       }
 
       user.isActive = false;
-      return await this.userRepository.save(user);
+      const savedUser = await this.userRepository.save(user);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword as User;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -184,7 +197,10 @@ export class UsersService {
       }
 
       user.isActive = true;
-      return await this.userRepository.save(user);
+      const savedUser = await this.userRepository.save(user);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...userWithoutPassword } = savedUser;
+      return userWithoutPassword as User;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

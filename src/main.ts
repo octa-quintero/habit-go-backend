@@ -8,7 +8,7 @@ async function bootstrap() {
   const logger = app.get<Logger>(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
 
-  const port = process.env.DB_PORT || 3000;
+  const port = process.env.PORT || 3000;
 
   await app.listen(port, () => {
     logger.log(`Servidor funcionando en el puerto: ${port}`, {
