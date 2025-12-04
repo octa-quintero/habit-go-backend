@@ -6,6 +6,7 @@ import { dataSourceOptions } from './config/orm.config';
 import { winstonConfig } from './config/winston.config';
 import { WinstonModule } from 'nest-winston';
 import { UsersModule } from 'module/users/users.module';
+import { AuthModule } from 'module/auth/auth.module';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -15,6 +16,7 @@ dotenv.config();
     TypeOrmModule.forRoot(dataSourceOptions),
     WinstonModule.forRoot(winstonConfig),
     UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

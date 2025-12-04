@@ -89,9 +89,7 @@ export class UsersService {
       if (!user) {
         throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
       }
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = user;
-      return userWithoutPassword as User;
+      return user;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -138,10 +136,7 @@ export class UsersService {
 
       // Actualizar usuario
       const updatedUser = this.userRepository.merge(user, updateUserDto);
-      const savedUser = await this.userRepository.save(updatedUser);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = savedUser;
-      return userWithoutPassword as User;
+      return await this.userRepository.save(updatedUser);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -168,10 +163,7 @@ export class UsersService {
       }
 
       user.isActive = false;
-      const savedUser = await this.userRepository.save(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = savedUser;
-      return userWithoutPassword as User;
+      return await this.userRepository.save(user);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
@@ -197,10 +189,7 @@ export class UsersService {
       }
 
       user.isActive = true;
-      const savedUser = await this.userRepository.save(user);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...userWithoutPassword } = savedUser;
-      return userWithoutPassword as User;
+      return await this.userRepository.save(user);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

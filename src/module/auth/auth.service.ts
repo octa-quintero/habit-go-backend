@@ -1,26 +1,67 @@
-import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { LoginDto } from './dto/login.dto';
+import { LoginResponse } from './interfaces/auth.interface';
+import { User } from '../users/entities/user.entity';
+import bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
-  }
+  constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+  ) {}
 
-  findAll() {
-    return `This action returns all auth`;
-  }
+  async login(loginDto: LoginDto): Promise<LoginResponse> {
+    const { email, password } = loginDto;
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
+    // Buscar usuario con password
+    const user = await this.userRepository.findOne({
+      where: { email },
+      select: [
+        'id',
+        'name',
+        'username',
+        'email',
+        'password',
+        'avatar',
+        'isActive',
+      ],
+    });
 
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
+    // Validaciones combinadas para evitar dar pistas
+    if (!user || !user.isActive) {
+      throw new UnauthorizedException('Los datos ingresados no son correctos.');
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    // Verificar contraseña
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Los datos ingresados no son correctos.');
+    }
+
+    // Crear payload JWT
+    const payload = {
+      sub: user.id,
+      email: user.email,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
+
+    // Retornar datos sin password
+    return {
+      userData: {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar ?? null,
+      },
+      accessToken,
+    };
   }
 }
