@@ -1,34 +1,75 @@
-// import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
-// import { HabitsService } from './habits.service';
-// import { CreateHabitDto } from './dto/create-habit.dto';
-// import { UpdateHabitDto } from './dto/update-habit.dto';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Request,
+  HttpCode,
+  HttpStatus,
+} from '@nestjs/common';
+import type { RequestWithUser } from './interfaces/request-user.interface';
+import { HabitsService } from './habits.service';
+import { CreateHabitDto } from './dto/create-habit.dto';
+import { UpdateHabitDto } from './dto/update-habit.dto';
 
-// @Controller('habits')
-// export class HabitsController {
-//   constructor(private readonly habitsService: HabitsService) {}
+@Controller('habits')
+export class HabitsController {
+  constructor(private readonly habitsService: HabitsService) {}
 
-//   @Post()
-//   create(@Body() createHabitDto: CreateHabitDto) {
-//     return this.habitsService.create(createHabitDto);
-//   }
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  async create(
+    @Request() req: RequestWithUser, // ✅ Tipado
+    @Body() createHabitDto: CreateHabitDto,
+  ) {
+    const userId = req.user.userId;
+    return this.habitsService.createHabit(userId, createHabitDto);
+  }
 
-//   @Get()
-//   findAll() {
-//     return this.habitsService.findAll();
-//   }
+  @Get()
+  async findAll(@Request() req: RequestWithUser) {
+    const userId = req.user.userId;
+    return this.habitsService.findAllHabits(userId);
+  }
 
-//   @Get(':id')
-//   findOne(@Param('id') id: string) {
-//     return this.habitsService.findOne(+id);
-//   }
+  @Get(':id')
+  async findOne(
+    @Request() req: RequestWithUser, // ✅ Tipado
+    @Param('id') id: string,
+  ) {
+    const userId = req.user.userId;
+    return this.habitsService.findOneHabit(userId, id);
+  }
 
-//   @Patch(':id')
-//   update(@Param('id') id: string, @Body() updateHabitDto: UpdateHabitDto) {
-//     return this.habitsService.update(+id, updateHabitDto);
-//   }
+  @Patch(':id')
+  async update(
+    @Request() req: RequestWithUser, // ✅ Tipado
+    @Param('id') id: string,
+    @Body() updateHabitDto: UpdateHabitDto,
+  ) {
+    const userId = req.user.userId;
+    return this.habitsService.updateHabit(userId, id, updateHabitDto);
+  }
 
-//   @Delete(':id')
-//   remove(@Param('id') id: string) {
-//     return this.habitsService.remove(+id);
-//   }
-// }
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async remove(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.habitsService.softDeleteHabit(userId, id);
+  }
+
+  @Patch(':id/restore')
+  async restore(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.habitsService.restoreHabit(userId, id);
+  }
+
+  @Get(':id/stats')
+  async getStats(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.habitsService.getHabitStats(userId, id);
+  }
+}
