@@ -7,7 +7,7 @@ import { winstonConfig } from './config/winston.config';
 import { WinstonModule } from 'nest-winston';
 import { UsersModule } from 'module/users/users.module';
 import { AuthModule } from 'module/auth/auth.module';
-import { Habit } from 'module/habits/entities/habit.entity';
+import { HabitsModule } from 'module/habits/habits.module';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,7 +18,7 @@ dotenv.config();
     WinstonModule.forRoot(winstonConfig),
     UsersModule,
     AuthModule,
-    Habit,
+    HabitsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
