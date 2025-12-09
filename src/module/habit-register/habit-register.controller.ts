@@ -1,34 +1,54 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  Param,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { HabitRegisterService } from './habit-register.service';
 import { CreateHabitRegisterDto } from './dto/create-habit-register.dto';
-import { UpdateHabitRegisterDto } from './dto/update-habit-register.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
+import type { RequestWithUser } from '../habits/interfaces/request-user.interface';
 
 @Controller('habit-register')
+@UseGuards(JwtAuthGuard)
 export class HabitRegisterController {
   constructor(private readonly habitRegisterService: HabitRegisterService) {}
 
   @Post()
-  create(@Body() createHabitRegisterDto: CreateHabitRegisterDto) {
-    return this.habitRegisterService.create(createHabitRegisterDto);
+  markAsCompleted(
+    @Body() createHabitRegisterDto: CreateHabitRegisterDto,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.habitRegisterService.markAsCompleted(
+      createHabitRegisterDto,
+      req.user.userId,
+    );
   }
 
   @Get()
-  findAll() {
-    return this.habitRegisterService.findAll();
+  getCompletedHabits(@Request() req: RequestWithUser) {
+    return this.habitRegisterService.getCompletedHabits(req.user.userId);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.habitRegisterService.findOne(+id);
+  @Get(':habitId')
+  getCompletedByHabit(
+    @Param('habitId') habitId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.habitRegisterService.getCompletedHabits(
+      req.user.userId,
+      habitId,
+    );
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateHabitRegisterDto: UpdateHabitRegisterDto) {
-    return this.habitRegisterService.update(+id, updateHabitRegisterDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.habitRegisterService.remove(+id);
+  @Get('streak/:habitId')
+  getStreakData(
+    @Param('habitId') habitId: string,
+    @Request() req: RequestWithUser,
+  ) {
+    return this.habitRegisterService.getStreakData(habitId, req.user.userId);
   }
 }

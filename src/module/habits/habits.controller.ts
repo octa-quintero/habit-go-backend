@@ -14,7 +14,10 @@ import type { RequestWithUser } from './interfaces/request-user.interface';
 import { HabitsService } from './habits.service';
 import { CreateHabitDto } from './dto/create-habit.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
+import { UseGuards } from '@nestjs/common';
 
+@UseGuards(JwtAuthGuard)
 @Controller('habits')
 export class HabitsController {
   constructor(private readonly habitsService: HabitsService) {}
@@ -22,7 +25,7 @@ export class HabitsController {
   @Post()
   @HttpCode(HttpStatus.CREATED)
   async create(
-    @Request() req: RequestWithUser, // ✅ Tipado
+    @Request() req: RequestWithUser,
     @Body() createHabitDto: CreateHabitDto,
   ) {
     const userId = req.user.userId;
@@ -36,17 +39,14 @@ export class HabitsController {
   }
 
   @Get(':id')
-  async findOne(
-    @Request() req: RequestWithUser, // ✅ Tipado
-    @Param('id') id: string,
-  ) {
+  async findOne(@Request() req: RequestWithUser, @Param('id') id: string) {
     const userId = req.user.userId;
     return this.habitsService.findOneHabit(userId, id);
   }
 
   @Patch(':id')
   async update(
-    @Request() req: RequestWithUser, // ✅ Tipado
+    @Request() req: RequestWithUser,
     @Param('id') id: string,
     @Body() updateHabitDto: UpdateHabitDto,
   ) {
