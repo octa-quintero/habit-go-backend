@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,6 +10,7 @@ import { AuthModule } from 'module/auth/auth.module';
 import { HabitsModule } from 'module/habits/habits.module';
 import { HabitRegisterModule } from 'module/habit-register/habit-register.module';
 import { RewardModule } from 'module/reward/reward.module';
+import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -27,4 +28,8 @@ dotenv.config();
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(LoggerMiddleware).forRoutes('*');
+  }
+}

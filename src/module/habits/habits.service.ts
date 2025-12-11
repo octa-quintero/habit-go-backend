@@ -100,6 +100,7 @@ export class HabitsService {
       if (error instanceof HttpException) {
         throw error;
       }
+      console.error('Error actualizando hábito:', error);
       throw new HttpException(
         'Error al actualizar el hábito',
         HttpStatus.INTERNAL_SERVER_ERROR,
