@@ -49,4 +49,6 @@ export class Habit {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+  currentStreak: number;
+  totalCompletions: number;
 }

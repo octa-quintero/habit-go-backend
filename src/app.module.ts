@@ -8,6 +8,8 @@ import { WinstonModule } from 'nest-winston';
 import { UsersModule } from 'module/users/users.module';
 import { AuthModule } from 'module/auth/auth.module';
 import { HabitsModule } from 'module/habits/habits.module';
+import { HabitRegisterModule } from 'module/habit-register/habit-register.module';
+import { RewardModule } from 'module/reward/reward.module';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -19,6 +21,8 @@ dotenv.config();
     UsersModule,
     AuthModule,
     HabitsModule,
+    HabitRegisterModule,
+    RewardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -1,34 +1,50 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UseGuards,
+  Request,
+} from '@nestjs/common';
 import { RewardService } from './reward.service';
-import { CreateRewardDto } from './dto/create-reward.dto';
-import { UpdateRewardDto } from './dto/update-reward.dto';
+import { MarkViewedDto } from './dto/mark-viewed.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
+import type { RequestWithUser } from '../habits/interfaces/request-user.interface';
 
-@Controller('reward')
+@Controller('rewards')
+@UseGuards(JwtAuthGuard)
 export class RewardController {
   constructor(private readonly rewardService: RewardService) {}
 
-  @Post()
-  create(@Body() createRewardDto: CreateRewardDto) {
-    return this.rewardService.create(createRewardDto);
-  }
-
   @Get()
-  findAll() {
-    return this.rewardService.findAll();
+  getAllRewards() {
+    return this.rewardService.getAllRewards();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.rewardService.findOne(+id);
+  @Get('user')
+  getUserRewards(@Request() req: RequestWithUser) {
+    return this.rewardService.getUserRewards(req.user.userId);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateRewardDto: UpdateRewardDto) {
-    return this.rewardService.update(+id, updateRewardDto);
+  @Post('check')
+  checkRewards(
+    @Request() req: RequestWithUser,
+    @Body() body: { habitId?: string },
+  ) {
+    return this.rewardService.checkAndUnlockRewards(
+      req.user.userId,
+      body.habitId,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.rewardService.remove(+id);
+  @Post('mark-viewed')
+  markAsViewed(
+    @Request() req: RequestWithUser,
+    @Body() markViewedDto: MarkViewedDto,
+  ) {
+    return this.rewardService.markRewardsAsViewed(
+      req.user.userId,
+      markViewedDto.rewardIds,
+    );
   }
 }
