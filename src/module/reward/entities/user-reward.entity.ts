@@ -33,4 +33,3 @@ export class UserReward {
   @Column({ nullable: true, name: 'related_habit_id' })
   relatedHabitId?: string;
 }
-export { Reward };

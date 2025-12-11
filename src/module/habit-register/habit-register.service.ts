@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Habit } from '../habits/entities/habit.entity';
 import { HabitRegister } from './entities/habit-register.entity';
 import { CreateHabitRegisterDto } from './dto/create-habit-register.dto';
+import { RewardService } from '../reward/reward.service';
 
 @Injectable()
 export class HabitRegisterService {
@@ -16,6 +17,7 @@ export class HabitRegisterService {
     private readonly habitRegisterRepository: Repository<HabitRegister>,
     @InjectRepository(Habit)
     private readonly habitRepository: Repository<Habit>,
+    private readonly rewardService: RewardService,
   ) {}
 
   private async updateStreak(habitId: string) {
@@ -97,11 +99,18 @@ export class HabitRegisterService {
     // Actualizar el streak del hábito
     await this.updateStreak(habitId);
 
+    // Verificar y desbloquear nuevas insignias automáticamente
+    const newRewards = await this.rewardService.checkAndUnlockRewards(
+      userId,
+      habitId,
+    );
+
     return {
       id: habitRegister.id,
       habitId: habitRegister.habit.id,
       date: habitRegister.date,
       completed: habitRegister.completed,
+      newRewards: newRewards.length > 0 ? newRewards : undefined,
     };
   }
 
