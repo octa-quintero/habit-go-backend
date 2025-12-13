@@ -4,6 +4,6 @@ import { IsOptional, IsBoolean } from 'class-validator';
 
 export class UpdateHabitDto extends PartialType(CreateHabitDto) {
   @IsOptional()
-  @IsBoolean()
+  @IsBoolean({ message: 'El estado activo debe ser un valor booleano' })
   isActive?: boolean;
 }
