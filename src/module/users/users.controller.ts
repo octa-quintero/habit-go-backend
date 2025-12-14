@@ -10,6 +10,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -19,6 +20,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post(':create')
+  @Throttle({ default: { ttl: 3600000, limit: 3 } }) // 3 registros por hora
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }

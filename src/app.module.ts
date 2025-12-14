@@ -4,7 +4,10 @@ import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { dataSourceOptions } from './config/orm.config';
 import { winstonConfig } from './config/winston.config';
+import { throttlerConfig } from './config/throttler.config';
 import { WinstonModule } from 'nest-winston';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { UsersModule } from 'module/users/users.module';
 import { AuthModule } from 'module/auth/auth.module';
 import { HabitsModule } from 'module/habits/habits.module';
@@ -19,6 +22,7 @@ dotenv.config();
   imports: [
     TypeOrmModule.forRoot(dataSourceOptions),
     WinstonModule.forRoot(winstonConfig),
+    ThrottlerModule.forRoot(throttlerConfig),
     UsersModule,
     AuthModule,
     HabitsModule,
@@ -26,7 +30,13 @@ dotenv.config();
     RewardModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

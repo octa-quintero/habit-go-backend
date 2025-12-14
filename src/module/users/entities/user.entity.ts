@@ -7,6 +7,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Habit } from '../../habits/entities/habit.entity';
+import { UserRole } from '../enums/user-role.enum';
 
 @Entity('users')
 export class User {
@@ -31,6 +32,15 @@ export class User {
   @Column({ default: true })
   isActive: boolean;
 
+  @Column({ default: false, name: 'is_email_verified' })
+  isEmailVerified: boolean;
+
+  @Column({ nullable: true, name: 'email_verification_token' })
+  emailVerificationToken?: string;
+
+  @Column({ nullable: true, name: 'email_verified_at' })
+  emailVerifiedAt?: Date;
+
   @OneToMany(() => Habit, (habit) => habit.user, { cascade: true })
   habits: Habit[];
 
@@ -42,8 +52,8 @@ export class User {
 
   @Column({
     type: 'enum',
-    enum: ['admin', 'user'],
-    default: 'user',
+    enum: UserRole,
+    default: UserRole.USER,
   })
-  role: 'admin' | 'user';
+  role: UserRole;
 }
