@@ -4,7 +4,6 @@ import { Habit } from 'module/habits/entities/habit.entity';
 import { HabitRegister } from 'module/habit-register/entities/habit-register.entity';
 import { Reward } from 'module/reward/entities/reward.entity';
 import { UserReward } from 'module/reward/entities/user-reward.entity';
-import { RefreshToken } from 'module/auth/entities/refresh-token.entity';
 import dotenvoption from './dotenv.config';
 
 export const dataSourceOptions: DataSourceOptions = {
@@ -17,7 +16,7 @@ export const dataSourceOptions: DataSourceOptions = {
   dropSchema: dotenvoption.DB_MIGRATE_DATA,
   synchronize: true,
   logging: false,
-  entities: [User, Habit, HabitRegister, Reward, UserReward, RefreshToken],
+  entities: [User, Habit, HabitRegister, Reward, UserReward],
   subscribers: [],
   migrations: [],
 };

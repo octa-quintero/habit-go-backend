@@ -23,50 +23,12 @@
 
 ## Description
 
-**Habit Go Backend** - Sistema de gestión de hábitos con gamificación, construido con [NestJS](https://nestjs.com/).
-
-## Características
-
-- 🔐 Autenticación con JWT + Refresh Tokens
-- 👥 Sistema de usuarios con roles
-- 📝 CRUD completo de hábitos
-- 🔥 Sistema de rachas (streaks)
-- 🏆 Sistema de recompensas e insignias
-- 📊 Estadísticas y analytics
-- 🛡️ Guards y middleware de seguridad
-- 📧 Verificación de email
-- 🚦 Rate limiting
-- 📝 Logging con Winston
-- 🔄 Gestión de sesiones con refresh tokens
-- 🚪 Logout individual y multi-dispositivo
-
-## Tecnologías
-
-- NestJS 11
-- TypeORM
-- PostgreSQL
-- JWT (Passport)
-- Winston Logger
-- Bcrypt
-- Class Validator
-
-## Requisitos
-
-- Node.js >= 18
-- PostgreSQL >= 14
-- npm o yarn
+[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
 ## Project setup
 
 ```bash
-# Instalar dependencias
 $ npm install
-
-# Copiar archivo de variables de entorno
-$ cp .env.example .env
-
-# Editar .env con tus valores
-# Mínimo necesario: DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME, JWT_SECRET
 ```
 
 ## Compile and run the project

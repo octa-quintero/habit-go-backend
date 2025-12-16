@@ -9,10 +9,4 @@ export interface UserData {
 export interface LoginResponse {
   userData: UserData;
   accessToken: string;
-  refreshToken: string;
-}
-
-export interface RefreshResponse {
-  accessToken: string;
-  refreshToken: string;
 }

@@ -5,12 +5,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import bcrypt from 'bcryptjs';
+import { EmailService } from 'module/email/email.service';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly emailService: EmailService,
   ) {}
 
   async createUser(createUserDto: CreateUserDto): Promise<User> {
@@ -43,6 +45,18 @@ export class UsersService {
 
       // Guardado del usuario en la base de datos
       const savedUser = await this.userRepository.save(user);
+
+      // Enviar email de verificación
+      try {
+        await this.emailService.sendVerificationEmail(
+          savedUser.email,
+          savedUser.username,
+          savedUser.emailVerificationToken || '',
+        );
+      } catch (emailError) {
+        // Log pero no falla la creación del usuario si el email falla
+        console.error('Error al enviar email de verificación:', emailError);
+      }
 
       // Eliminar password de la respuesta
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -196,6 +210,48 @@ export class UsersService {
       }
       throw new HttpException(
         `Error al restaurar el usuario con ID ${id}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async verifyEmail(
+    email: string,
+    token: string,
+  ): Promise<{ message: string }> {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
+
+      if (!user) {
+        throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      if (user.emailVerifiedAt) {
+        throw new HttpException('Email ya verificado', HttpStatus.BAD_REQUEST);
+      }
+
+      if (user.emailVerificationToken !== token) {
+        throw new HttpException('Token inválido', HttpStatus.BAD_REQUEST);
+      }
+
+      user.emailVerifiedAt = new Date();
+      user.emailVerificationToken = undefined;
+      await this.userRepository.save(user);
+
+      // Enviar email de bienvenida
+      try {
+        await this.emailService.sendWelcomeEmail(user.email, user.username);
+      } catch (emailError) {
+        console.error('Error al enviar email de bienvenida:', emailError);
+      }
+
+      return { message: 'Email verificado correctamente' };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error al verificar el email',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

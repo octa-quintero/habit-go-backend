@@ -14,13 +14,14 @@ import { Throttle } from '@nestjs/throttler';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post(':create')
-  @Throttle({ default: { ttl: 3600000, limit: 3 } }) // 3 registros por hora
+  @Throttle({ default: { ttl: 3600000, limit: 10 } })
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.createUser(createUserDto);
   }
@@ -52,5 +53,15 @@ export class UsersController {
   @Patch(':id/restore')
   async restore(@Param('id') id: string) {
     return this.usersService.restoreUser(id);
+  }
+
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60000, limit: 5 } }) // 5 intentos por minuto
+  async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
+    return this.usersService.verifyEmail(
+      verifyEmailDto.email,
+      verifyEmailDto.token,
+    );
   }
 }

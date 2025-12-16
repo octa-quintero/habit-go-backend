@@ -6,13 +6,11 @@ export const config = {
   // Server
   PORT: process.env.PORT || '3000',
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:3001',
-  NODE_ENV: process.env.NODE_ENV || 'development',
 
   // JWT
   JWT_SECRET:
     process.env.JWT_SECRET || 'default-secret-key-change-in-production',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1h',
-  REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d',
 
   // Database
   DB_PORT: process.env.DB_PORT,
@@ -22,18 +20,20 @@ export const config = {
   DB_NAME: process.env.DB_NAME,
   DB_MIGRATE_DATA: process.env.DB_MIGRATE_DATA === 'true' || false,
 
-  // Email (optional)
-  EMAIL_SERVICE: process.env.EMAIL_SERVICE || 'gmail',
-  EMAIL_USER: process.env.EMAIL_USER,
-  EMAIL_PASSWORD: process.env.EMAIL_PASSWORD,
+  // Google OAuth
+  GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
+  GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET || '',
+  GOOGLE_CALLBACK_URL:
+    process.env.GOOGLE_CALLBACK_URL ||
+    'http://localhost:3000/auth/google/callback',
+
+  // Email
+  EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
+  EMAIL_PORT: parseInt(process.env.EMAIL_PORT || '587', 10),
+  EMAIL_USER: process.env.EMAIL_USER || '',
+  EMAIL_PASSWORD: process.env.EMAIL_PASSWORD || '',
   EMAIL_FROM_NAME: process.env.EMAIL_FROM_NAME || 'Habit Go',
-
-  // Security (optional)
-  MAX_LOGIN_ATTEMPTS: parseInt(process.env.MAX_LOGIN_ATTEMPTS || '5', 10),
-  LOGIN_BLOCK_TIME: parseInt(process.env.LOGIN_BLOCK_TIME || '15', 10),
-
-  // Logging (optional)
-  LOG_LEVEL: process.env.LOG_LEVEL || 'debug',
+  EMAIL_SECURE: process.env.EMAIL_SECURE === 'true' || false,
 };
 
 export default config;

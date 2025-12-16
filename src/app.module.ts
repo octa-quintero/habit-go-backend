@@ -13,6 +13,7 @@ import { AuthModule } from 'module/auth/auth.module';
 import { HabitsModule } from 'module/habits/habits.module';
 import { HabitRegisterModule } from 'module/habit-register/habit-register.module';
 import { RewardModule } from 'module/reward/reward.module';
+import { EmailModule } from 'module/email/email.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import dotenv from 'dotenv';
 
@@ -28,6 +29,7 @@ dotenv.config();
     HabitsModule,
     HabitRegisterModule,
     RewardModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [

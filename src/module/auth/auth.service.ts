@@ -1,34 +1,29 @@
 import {
   Injectable,
   UnauthorizedException,
-  BadRequestException,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, LessThan } from 'typeorm';
+import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
-import { LoginResponse, RefreshResponse } from './interfaces/auth.interface';
+import { LoginResponse } from './interfaces/auth.interface';
 import { User } from '../users/entities/user.entity';
-import { RefreshToken } from './entities/refresh-token.entity';
-import { config } from '../../config/dotenv.config';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(RefreshToken)
-    private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
+    private readonly emailService: EmailService,
   ) {}
 
-  async login(
-    loginDto: LoginDto,
-    userAgent?: string,
-    ipAddress?: string,
-  ): Promise<LoginResponse> {
+  async login(loginDto: LoginDto): Promise<LoginResponse> {
     const { email, password } = loginDto;
 
     // Buscar usuario con password
@@ -57,13 +52,13 @@ export class AuthService {
       throw new UnauthorizedException('Los datos ingresados no son correctos.');
     }
 
-    // Generar tokens
-    const accessToken = this.generateAccessToken(user.id, user.email);
-    const refreshToken = await this.generateRefreshToken(
-      user,
-      userAgent,
-      ipAddress,
-    );
+    // Crear payload JWT
+    const payload = {
+      sub: user.id,
+      email: user.email,
+    };
+
+    const accessToken = this.jwtService.sign(payload);
 
     // Retornar datos sin password
     return {
@@ -75,147 +70,163 @@ export class AuthService {
         avatar: user.avatar ?? null,
       },
       accessToken,
-      refreshToken,
     };
   }
 
-  async refreshTokens(
-    refreshTokenString: string,
-    userAgent?: string,
-    ipAddress?: string,
-  ): Promise<RefreshResponse> {
-    // Buscar refresh token en BD
-    const refreshToken = await this.refreshTokenRepository.findOne({
-      where: { token: refreshTokenString },
-      relations: ['user'],
+  async googleLogin(googleUser: any): Promise<LoginResponse> {
+    // Buscar usuario existente por email
+    let user = await this.userRepository.findOne({
+      where: { email: googleUser.email },
     });
 
-    // Validar que existe
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token inválido');
+    // Si no existe, crear nuevo usuario
+    if (!user) {
+      const username = googleUser.email.split('@')[0];
+      user = this.userRepository.create({
+        name: googleUser.name,
+        username: username,
+        email: googleUser.email,
+        avatar: googleUser.avatar,
+        password: '', // No necesita password para login con Google
+        isEmailVerified: true, // Google ya verificó el email
+      });
+      await this.userRepository.save(user);
     }
 
-    // Validar que no está revocado
-    if (refreshToken.isRevoked) {
-      throw new UnauthorizedException('Refresh token revocado');
-    }
+    // Crear token JWT
+    const payload = {
+      sub: user.id,
+      email: user.email,
+    };
 
-    // Validar que no expiró
-    if (new Date() > refreshToken.expiresAt) {
-      throw new UnauthorizedException('Refresh token expirado');
-    }
-
-    // Validar que el usuario sigue activo
-    if (!refreshToken.user.isActive) {
-      throw new UnauthorizedException('Usuario inactivo');
-    }
-
-    // Revocar el refresh token antiguo
-    await this.revokeRefreshToken(refreshTokenString);
-
-    // Generar nuevos tokens
-    const accessToken = this.generateAccessToken(
-      refreshToken.user.id,
-      refreshToken.user.email,
-    );
-    const newRefreshToken = await this.generateRefreshToken(
-      refreshToken.user,
-      userAgent,
-      ipAddress,
-    );
+    const accessToken = this.jwtService.sign(payload);
 
     return {
+      userData: {
+        id: user.id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        avatar: user.avatar ?? null,
+      },
       accessToken,
-      refreshToken: newRefreshToken,
     };
   }
 
-  async logout(refreshTokenString: string): Promise<void> {
-    await this.revokeRefreshToken(refreshTokenString);
-  }
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    try {
+      const user = await this.userRepository.findOne({ where: { email } });
 
-  async revokeRefreshToken(token: string): Promise<void> {
-    const refreshToken = await this.refreshTokenRepository.findOne({
-      where: { token },
-    });
+      if (!user) {
+        // Por seguridad, no revelamos si el email existe o no
+        return {
+          message:
+            'Si el correo existe, recibirás un email con instrucciones para restablecer tu contraseña',
+        };
+      }
 
-    if (refreshToken) {
-      refreshToken.isRevoked = true;
-      await this.refreshTokenRepository.save(refreshToken);
+      // Generar token de reset (32 bytes en hexadecimal)
+      const resetToken = randomBytes(32).toString('hex');
+
+      // El token expira en 1 hora
+      const expiresAt = new Date();
+      expiresAt.setHours(expiresAt.getHours() + 1);
+
+      // Guardar token y expiración
+      user.passwordResetToken = resetToken;
+      user.passwordResetExpires = expiresAt;
+      await this.userRepository.save(user);
+
+      // Enviar email
+      try {
+        await this.emailService.sendPasswordResetEmail(
+          user.email,
+          user.name,
+          resetToken,
+        );
+      } catch (emailError) {
+        console.error('Error al enviar email de reset:', emailError);
+        throw new HttpException(
+          'Error al enviar el email de recuperación',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
+
+      return {
+        message:
+          'Si el correo existe, recibirás un email con instrucciones para restablecer tu contraseña',
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error al procesar la solicitud',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 
-  async revokeAllUserTokens(userId: string): Promise<void> {
-    await this.refreshTokenRepository.update(
-      { user: { id: userId }, isRevoked: false },
-      { isRevoked: true },
-    );
-  }
+  async resetPassword(
+    email: string,
+    token: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { email },
+        select: [
+          'id',
+          'name',
+          'email',
+          'password',
+          'passwordResetToken',
+          'passwordResetExpires',
+        ],
+      });
 
-  // Limpiar tokens expirados (ejecutar periódicamente con cron)
-  async cleanExpiredTokens(): Promise<void> {
-    await this.refreshTokenRepository.delete({
-      expiresAt: LessThan(new Date()),
-    });
-  }
+      if (!user) {
+        throw new HttpException(
+          'Token inválido o expirado',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-  private generateAccessToken(userId: string, email: string): string {
-    const payload = {
-      sub: userId,
-      email: email,
-    };
-    return this.jwtService.sign(payload);
-  }
+      if (!user.passwordResetToken || user.passwordResetToken !== token) {
+        throw new HttpException(
+          'Token inválido o expirado',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-  private async generateRefreshToken(
-    user: User,
-    userAgent?: string,
-    ipAddress?: string,
-  ): Promise<string> {
-    // Generar token aleatorio
-    const token = randomBytes(64).toString('hex');
+      if (
+        !user.passwordResetExpires ||
+        user.passwordResetExpires < new Date()
+      ) {
+        throw new HttpException(
+          'Token inválido o expirado',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-    // Calcular fecha de expiración
-    const expiresIn = config.REFRESH_TOKEN_EXPIRES_IN;
-    const expiresAt = this.calculateExpirationDate(expiresIn);
+      // Encriptar nueva contraseña
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Guardar en base de datos
-    const refreshToken = this.refreshTokenRepository.create({
-      token,
-      user,
-      expiresAt,
-      userAgent,
-      ipAddress,
-    });
+      // Actualizar contraseña y limpiar token
+      user.password = hashedPassword;
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      await this.userRepository.save(user);
 
-    await this.refreshTokenRepository.save(refreshToken);
-
-    return token;
-  }
-
-  private calculateExpirationDate(duration: string): Date {
-    const now = new Date();
-    const match = duration.match(/^(\d+)([dhm])$/);
-
-    if (!match) {
-      throw new BadRequestException('Formato de duración inválido');
+      return { message: 'Contraseña actualizada correctamente' };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error al restablecer la contraseña',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    const [, value, unit] = match;
-    const numValue = parseInt(value, 10);
-
-    switch (unit) {
-      case 'd':
-        now.setDate(now.getDate() + numValue);
-        break;
-      case 'h':
-        now.setHours(now.getHours() + numValue);
-        break;
-      case 'm':
-        now.setMinutes(now.getMinutes() + numValue);
-        break;
-    }
-
-    return now;
   }
 }

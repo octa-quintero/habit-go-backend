@@ -41,6 +41,12 @@ export class User {
   @Column({ nullable: true, name: 'email_verified_at' })
   emailVerifiedAt?: Date;
 
+  @Column({ nullable: true, name: 'password_reset_token' })
+  passwordResetToken?: string;
+
+  @Column({ nullable: true, name: 'password_reset_expires' })
+  passwordResetExpires?: Date;
+
   @OneToMany(() => Habit, (habit) => habit.user, { cascade: true })
   habits: Habit[];
 
