@@ -24,7 +24,7 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { ttl: 900000, limit: 5 } })
+  @Throttle({ default: { ttl: 900000, limit: 5 } }) // 5 intentos cada 15 min
   async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
@@ -47,7 +47,7 @@ export class AuthController {
 
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { ttl: 900000, limit: 3 } }) // 3 intentos por 15 minutos
+  @Throttle({ default: { ttl: 3600000, limit: 3 } }) // 3 intentos cada hora
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     return this.authService.forgotPassword(forgotPasswordDto.email);
   }

@@ -50,13 +50,10 @@ export class HabitsService {
     }
   }
 
-  async findOneHabit(userId: string, habitId: string): Promise<Habit> {
+  async findOneHabit(habitId: string): Promise<Habit> {
     try {
       const habit = await this.habitRepository.findOne({
-        where: {
-          id: habitId,
-          user: { id: userId },
-        },
+        where: { id: habitId },
         relations: ['registers'],
       });
 
@@ -77,16 +74,12 @@ export class HabitsService {
   }
 
   async updateHabit(
-    userId: string,
     habitId: string,
     updateHabitDto: UpdateHabitDto,
   ): Promise<Habit> {
     try {
       const habit = await this.habitRepository.findOne({
-        where: {
-          id: habitId,
-          user: { id: userId },
-        },
+        where: { id: habitId },
       });
 
       if (!habit) {
@@ -108,13 +101,10 @@ export class HabitsService {
     }
   }
 
-  async softDeleteHabit(userId: string, habitId: string): Promise<Habit> {
+  async softDeleteHabit(habitId: string): Promise<Habit> {
     try {
       const habit = await this.habitRepository.findOne({
-        where: {
-          id: habitId,
-          user: { id: userId },
-        },
+        where: { id: habitId },
       });
 
       if (!habit) {
@@ -141,13 +131,11 @@ export class HabitsService {
     }
   }
 
-  async restoreHabit(userId: string, habitId: string): Promise<Habit> {
+  async restoreHabit(habitId: string): Promise<Habit> {
     try {
-      // Buscar hábito desactivado del usuario
       const habit = await this.habitRepository.findOne({
         where: {
           id: habitId,
-          user: { id: userId },
           isActive: false, // Solo busca desactivados
         },
       });
@@ -159,7 +147,6 @@ export class HabitsService {
         );
       }
 
-      // Reactivar el hábito
       habit.isActive = true;
       return await this.habitRepository.save(habit);
     } catch (error) {
@@ -173,14 +160,10 @@ export class HabitsService {
     }
   }
 
-  async getHabitStats(userId: string, habitId: string): Promise<HabitStats> {
+  async getHabitStats(habitId: string): Promise<HabitStats> {
     try {
-      // Buscar hábito con sus registros
       const habit = await this.habitRepository.findOne({
-        where: {
-          id: habitId,
-          user: { id: userId },
-        },
+        where: { id: habitId },
         relations: ['registers'],
       });
 

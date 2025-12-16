@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import bcrypt from 'bcryptjs';
 import { EmailService } from 'module/email/email.service';
+import type { UserStats } from './interfaces/user-stats.interface';
 
 @Injectable()
 export class UsersService {
@@ -252,6 +253,54 @@ export class UsersService {
       }
       throw new HttpException(
         'Error al verificar el email',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async getUserStats(userId: string): Promise<UserStats> {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['habits', 'habits.registers'],
+      });
+
+      if (!user) {
+        throw new HttpException('Usuario no encontrado', HttpStatus.NOT_FOUND);
+      }
+
+      // Calcular estadísticas
+      const totalHabits = user.habits.length;
+      const activeHabits = user.habits.filter((h) => h.isActive).length;
+
+      let totalCompletions = 0;
+      let currentStreak = 0;
+      let longestStreak = 0;
+
+      user.habits.forEach((habit) => {
+        totalCompletions += habit.registers?.length || 0;
+        if (habit.streak > currentStreak) {
+          currentStreak = habit.streak;
+        }
+        if (habit.longestStreak > longestStreak) {
+          longestStreak = habit.longestStreak;
+        }
+      });
+
+      return {
+        totalHabits,
+        activeHabits,
+        totalCompletions,
+        currentStreak,
+        longestStreak,
+        memberSince: user.createdAt,
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new HttpException(
+        'Error al obtener estadísticas del usuario',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
