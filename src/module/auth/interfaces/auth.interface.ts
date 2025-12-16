@@ -9,4 +9,12 @@ export interface UserData {
 export interface LoginResponse {
   userData: UserData;
   accessToken: string;
+  refreshToken: string;
+}
+
+export interface SessionInfo {
+  id: string;
+  createdAt: Date;
+  expiresAt: Date;
+  isCurrentSession: boolean;
 }

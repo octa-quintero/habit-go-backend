@@ -14,7 +14,10 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LogoutDto } from './dto/logout.dto';
 import { GoogleOAuthGuard } from '../../common/guards/google-oauth/google-oauth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
 import type { Response } from 'express';
 import { config } from '../../config/dotenv.config';
 
@@ -61,5 +64,35 @@ export class AuthController {
       resetPasswordDto.token,
       resetPasswordDto.newPassword,
     );
+  }
+
+  @Post('refresh')
+  @HttpCode(HttpStatus.OK)
+  @Throttle({ default: { ttl: 60000, limit: 20 } }) // 20 intentos por minuto
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshAccessToken(refreshTokenDto.refreshToken);
+  }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { ttl: 60000, limit: 10 } }) // 10 intentos por minuto
+  async logout(@Req() req: any, @Body() logoutDto: LogoutDto) {
+    return this.authService.logout(req.user.userId, logoutDto.refreshToken);
+  }
+
+  @Post('logout-all')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { ttl: 60000, limit: 5 } }) // 5 intentos por minuto
+  async logoutAll(@Req() req: any) {
+    return this.authService.logoutAll(req.user.userId);
+  }
+
+  @Get('sessions')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { ttl: 60000, limit: 10 } }) // 10 intentos por minuto
+  async getSessions(@Req() req: any) {
+    return this.authService.getSessions(req.user.userId);
   }
 }

@@ -11,6 +11,7 @@ export const config = {
   JWT_SECRET:
     process.env.JWT_SECRET || 'default-secret-key-change-in-production',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '1h',
+  REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN || '14d',
 
   // Database
   DB_PORT: process.env.DB_PORT,
