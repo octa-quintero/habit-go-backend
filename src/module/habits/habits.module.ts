@@ -4,10 +4,9 @@ import { HabitsController } from './habits.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Habit } from './entities/habit.entity';
 import { ConfigModule } from '@nestjs/config';
-import { OwnershipModule } from '../../common/guards/ownership/ownership.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Habit]), ConfigModule, OwnershipModule],
+  imports: [TypeOrmModule.forFeature([Habit]), ConfigModule],
   controllers: [HabitsController],
   providers: [HabitsService],
   exports: [TypeOrmModule],

@@ -8,12 +8,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
-import { LoginResponse, SessionInfo } from './interfaces/auth.interface';
+import { LoginResponse } from './interfaces/auth.interface';
 import { User } from '../users/entities/user.entity';
-import { Auth } from './entities/auth.entity';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
-import { config } from '../../config/dotenv.config';
 import { EmailService } from '../email/email.service';
 
 @Injectable()
@@ -21,8 +19,6 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Auth)
-    private readonly authRepository: Repository<Auth>,
     private readonly jwtService: JwtService,
     private readonly emailService: EmailService,
   ) {}
@@ -64,9 +60,6 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload);
 
-    // Generar refresh token
-    const refreshToken = await this.createRefreshToken(user.id);
-
     // Retornar datos sin password
     return {
       userData: {
@@ -77,7 +70,6 @@ export class AuthService {
         avatar: user.avatar ?? null,
       },
       accessToken,
-      refreshToken: refreshToken.token,
     };
   }
 
@@ -109,9 +101,6 @@ export class AuthService {
 
     const accessToken = this.jwtService.sign(payload);
 
-    // Generar refresh token
-    const refreshToken = await this.createRefreshToken(user.id);
-
     return {
       userData: {
         id: user.id,
@@ -121,7 +110,6 @@ export class AuthService {
         avatar: user.avatar ?? null,
       },
       accessToken,
-      refreshToken: refreshToken.token,
     };
   }
 
@@ -237,169 +225,6 @@ export class AuthService {
       }
       throw new HttpException(
         'Error al restablecer la contraseña',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  private async createRefreshToken(userId: string): Promise<Auth> {
-    // Generar token aleatorio
-    const token = randomBytes(64).toString('hex');
-
-    // Expiración de 14 días
-    const expiresAt = new Date();
-    const daysToExpire = parseInt(
-      config.REFRESH_TOKEN_EXPIRES_IN?.replace('d', '') || '14',
-    );
-    expiresAt.setDate(expiresAt.getDate() + daysToExpire);
-
-    // Crear registro de refresh token
-    const refreshToken = this.authRepository.create({
-      user: { id: userId },
-      token,
-      tokenType: 'refresh',
-      expiresAt,
-      isRevoked: false,
-    });
-
-    return await this.authRepository.save(refreshToken);
-  }
-
-  async refreshAccessToken(
-    refreshToken: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    try {
-      // Buscar refresh token
-      const tokenRecord = await this.authRepository.findOne({
-        where: { token: refreshToken, tokenType: 'refresh' },
-        relations: ['user'],
-      });
-
-      if (!tokenRecord) {
-        throw new UnauthorizedException('Refresh token inválido');
-      }
-
-      // Validar que no esté revocado
-      if (tokenRecord.isRevoked) {
-        throw new UnauthorizedException('Refresh token revocado');
-      }
-
-      // Validar que no haya expirado
-      if (tokenRecord.expiresAt < new Date()) {
-        throw new UnauthorizedException('Refresh token expirado');
-      }
-
-      // Validar que el usuario esté activo
-      if (!tokenRecord.user.isActive) {
-        throw new UnauthorizedException('Usuario inactivo');
-      }
-
-      // Revocar el refresh token actual (rotación)
-      tokenRecord.isRevoked = true;
-      await this.authRepository.save(tokenRecord);
-
-      // Generar nuevo access token
-      const payload = {
-        sub: tokenRecord.user.id,
-        email: tokenRecord.user.email,
-      };
-      const accessToken = this.jwtService.sign(payload);
-
-      // Generar nuevo refresh token
-      const newRefreshToken = await this.createRefreshToken(
-        tokenRecord.user.id,
-      );
-
-      return {
-        accessToken,
-        refreshToken: newRefreshToken.token,
-      };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new HttpException(
-        'Error al renovar el token',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async logout(
-    userId: string,
-    refreshToken?: string,
-  ): Promise<{ message: string }> {
-    try {
-      if (!refreshToken) {
-        return { message: 'Sesión cerrada correctamente' };
-      }
-
-      // Buscar y revocar el refresh token
-      const tokenRecord = await this.authRepository.findOne({
-        where: {
-          token: refreshToken,
-          user: { id: userId },
-          tokenType: 'refresh',
-        },
-      });
-
-      if (tokenRecord && !tokenRecord.isRevoked) {
-        tokenRecord.isRevoked = true;
-        await this.authRepository.save(tokenRecord);
-      }
-
-      return { message: 'Sesión cerrada correctamente' };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new HttpException(
-        'Error al cerrar sesión',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async logoutAll(userId: string): Promise<{ message: string }> {
-    try {
-      // Revocar todos los refresh tokens del usuario
-      await this.authRepository.update(
-        { user: { id: userId }, tokenType: 'refresh', isRevoked: false },
-        { isRevoked: true },
-      );
-
-      return { message: 'Todas las sesiones cerradas correctamente' };
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new HttpException(
-        'Error al cerrar todas las sesiones',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  async getSessions(
-    userId: string,
-    currentToken?: string,
-  ): Promise<SessionInfo[]> {
-    try {
-      const sessions = await this.authRepository.find({
-        where: {
-          user: { id: userId },
-          tokenType: 'refresh',
-          isRevoked: false,
-        },
-        order: { createdAt: 'DESC' },
-      });
-
-      return sessions.map((session) => ({
-        id: session.id,
-        createdAt: session.createdAt,
-        expiresAt: session.expiresAt,
-        isCurrentSession: currentToken ? session.token === currentToken : false,
-      }));
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    } catch (error) {
-      throw new HttpException(
-        'Error al obtener las sesiones',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -11,6 +11,14 @@ async function bootstrap() {
   const logger = app.get<Logger>(WINSTON_MODULE_NEST_PROVIDER);
   app.useLogger(logger);
 
+  // Configurar CORS
+  app.enableCors({
+    origin: ['http://localhost:3001', 'http://localhost:3000'], // Ajusta los orígenes según tus necesidades
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Cache-Control', 'Pragma'],
+  });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

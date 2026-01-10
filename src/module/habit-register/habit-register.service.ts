@@ -27,6 +27,18 @@ export class HabitRegisterService {
 
     if (!habit) return;
 
+    // MODO TESTING: Contar total de registros en lugar de días consecutivos
+    const totalRegisters = await this.habitRegisterRepository.count({
+      where: { habit: { id: habitId }, completed: true },
+    });
+
+    // Actualizar hábito con el total de completaciones
+    habit.streak = totalRegisters;
+    habit.longestStreak = Math.max(habit.longestStreak, totalRegisters);
+
+    await this.habitRepository.save(habit);
+    
+    /* LÓGICA ORIGINAL - Descomentar cuando termines el testing
     // Obtener registros ordenados por fecha descendente
     const registers = await this.habitRegisterRepository.find({
       where: { habit: { id: habitId }, completed: true },
@@ -56,6 +68,7 @@ export class HabitRegisterService {
     habit.longestStreak = Math.max(habit.longestStreak, currentStreak);
 
     await this.habitRepository.save(habit);
+    */
   }
 
   async markAsCompleted(
@@ -76,16 +89,27 @@ export class HabitRegisterService {
     // Verificar que no se haya completado hoy
     const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
 
+    // COMENTADO PARA TESTING - Permitir múltiples completaciones por día
+    /*
     const existingRegister = await this.habitRegisterRepository.findOne({
       where: {
         habit: { id: habitId },
         date: today,
       },
+      relations: ['habit'],
     });
 
     if (existingRegister) {
-      throw new BadRequestException('Ya completaste este hábito hoy');
+      // Si ya existe, retornar el registro existente sin error
+      return {
+        id: existingRegister.id,
+        habitId: existingRegister.habit.id,
+        date: existingRegister.date,
+        completed: existingRegister.completed,
+        alreadyCompleted: true,
+      };
     }
+    */
 
     // Crear el registro
     const habitRegister = this.habitRegisterRepository.create({

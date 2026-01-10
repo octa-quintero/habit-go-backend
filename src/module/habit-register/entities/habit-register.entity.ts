@@ -10,7 +10,8 @@ import {
 import { Habit } from '../../habits/entities/habit.entity';
 
 @Entity('habit_registers')
-@Index(['habit', 'date'], { unique: true })
+// COMENTADO PARA TESTING - Permitir múltiples registros por día
+// @Index(['habit', 'date'], { unique: true })
 export class HabitRegister {
   @PrimaryGeneratedColumn('uuid')
   id: string;

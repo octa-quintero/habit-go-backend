@@ -6,7 +6,6 @@ import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
 import bcrypt from 'bcryptjs';
 import { EmailService } from 'module/email/email.service';
-import type { UserStats } from './interfaces/user-stats.interface';
 
 @Injectable()
 export class UsersService {
@@ -258,7 +257,7 @@ export class UsersService {
     }
   }
 
-  async getUserStats(userId: string): Promise<UserStats> {
+  async getUserStats(userId: string): Promise<any> {
     try {
       const user = await this.userRepository.findOne({
         where: { id: userId },

@@ -10,19 +10,14 @@ import {
 import { HabitRegisterService } from './habit-register.service';
 import { CreateHabitRegisterDto } from './dto/create-habit-register.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
-import { EmailVerifiedGuard } from '../../common/guards/email-verified/email-verified.guard';
-import { RequireEmailVerification } from '../../common/guards/email-verified/email-verified.decorator';
-import { Throttle } from '@nestjs/throttler';
 import type { RequestWithUser } from '../habits/interfaces/request-user.interface';
 
 @Controller('habit-register')
-@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-@RequireEmailVerification()
+@UseGuards(JwtAuthGuard)
 export class HabitRegisterController {
   constructor(private readonly habitRegisterService: HabitRegisterService) {}
 
   @Post()
-  @Throttle({ default: { ttl: 60000, limit: 100 } })
   markAsCompleted(
     @Body() createHabitRegisterDto: CreateHabitRegisterDto,
     @Request() req: RequestWithUser,

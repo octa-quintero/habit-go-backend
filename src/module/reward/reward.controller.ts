@@ -9,14 +9,10 @@ import {
 import { RewardService } from './reward.service';
 import { MarkViewedDto } from './dto/mark-viewed.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
-import { EmailVerifiedGuard } from '../../common/guards/email-verified/email-verified.guard';
-import { RequireEmailVerification } from '../../common/guards/email-verified/email-verified.decorator';
-import { Throttle } from '@nestjs/throttler';
 import type { RequestWithUser } from '../habits/interfaces/request-user.interface';
 
 @Controller('rewards')
-@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-@RequireEmailVerification()
+@UseGuards(JwtAuthGuard)
 export class RewardController {
   constructor(private readonly rewardService: RewardService) {}
 
@@ -31,7 +27,6 @@ export class RewardController {
   }
 
   @Post('check')
-  @Throttle({ default: { ttl: 60000, limit: 50 } })
   checkRewards(
     @Request() req: RequestWithUser,
     @Body() body: { habitId?: string },
@@ -43,7 +38,6 @@ export class RewardController {
   }
 
   @Post('mark-viewed')
-  @Throttle({ default: { ttl: 60000, limit: 30 } })
   markAsViewed(
     @Request() req: RequestWithUser,
     @Body() markViewedDto: MarkViewedDto,

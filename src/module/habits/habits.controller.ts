@@ -15,21 +15,14 @@ import { HabitsService } from './habits.service';
 import { CreateHabitDto } from './dto/create-habit.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
-import { EmailVerifiedGuard } from '../../common/guards/email-verified/email-verified.guard';
-import { OwnershipGuard } from '../../common/guards/ownership/ownership.guard';
-import { RequireEmailVerification } from '../../common/guards/email-verified/email-verified.decorator';
-import { CheckOwnership } from '../../common/guards/ownership/ownership.decorator';
 import { UseGuards } from '@nestjs/common';
-import { Throttle } from '@nestjs/throttler';
 
-@UseGuards(JwtAuthGuard, EmailVerifiedGuard)
-@RequireEmailVerification()
+@UseGuards(JwtAuthGuard)
 @Controller('habits')
 export class HabitsController {
   constructor(private readonly habitsService: HabitsService) {}
 
   @Post()
-  @Throttle({ default: { ttl: 60000, limit: 20 } })
   @HttpCode(HttpStatus.CREATED)
   async create(
     @Request() req: RequestWithUser,
@@ -46,42 +39,37 @@ export class HabitsController {
   }
 
   @Get(':id')
-  @UseGuards(OwnershipGuard)
-  @CheckOwnership({ entity: 'habit', paramName: 'id' })
-  async findOne(@Param('id') id: string) {
-    return this.habitsService.findOneHabit(id);
+  async findOne(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.habitsService.findOneHabit(userId, id);
   }
 
   @Patch(':id')
-  @UseGuards(OwnershipGuard)
-  @CheckOwnership({ entity: 'habit', paramName: 'id' })
   async update(
+    @Request() req: RequestWithUser,
     @Param('id') id: string,
     @Body() updateHabitDto: UpdateHabitDto,
   ) {
-    return this.habitsService.updateHabit(id, updateHabitDto);
+    const userId = req.user.userId;
+    return this.habitsService.updateHabit(userId, id, updateHabitDto);
   }
 
   @Delete(':id')
-  @UseGuards(OwnershipGuard)
-  @CheckOwnership({ entity: 'habit', paramName: 'id' })
-  @Throttle({ default: { ttl: 60000, limit: 10 } })
   @HttpCode(HttpStatus.OK)
-  async remove(@Param('id') id: string) {
-    return this.habitsService.softDeleteHabit(id);
+  async remove(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.habitsService.softDeleteHabit(userId, id);
   }
 
   @Patch(':id/restore')
-  @UseGuards(OwnershipGuard)
-  @CheckOwnership({ entity: 'habit', paramName: 'id' })
-  async restore(@Param('id') id: string) {
-    return this.habitsService.restoreHabit(id);
+  async restore(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.habitsService.restoreHabit(userId, id);
   }
 
   @Get(':id/stats')
-  @UseGuards(OwnershipGuard)
-  @CheckOwnership({ entity: 'habit', paramName: 'id' })
-  async getStats(@Param('id') id: string) {
-    return this.habitsService.getHabitStats(id);
+  async getStats(@Request() req: RequestWithUser, @Param('id') id: string) {
+    const userId = req.user.userId;
+    return this.habitsService.getHabitStats(userId, id);
   }
 }

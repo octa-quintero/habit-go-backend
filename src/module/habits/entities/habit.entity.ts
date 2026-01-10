@@ -34,6 +34,14 @@ export class Habit {
   @Column({ nullable: true, name: 'last_completed_date' })
   lastCompletedDate?: Date;
 
+  @Column({
+    type: 'int',
+    default: 1,
+    name: 'plant_number',
+    comment: 'Flower number (1-15)',
+  })
+  plantNumber: number;
+
   @ManyToOne(() => User, (user) => user.habits, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
