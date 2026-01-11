@@ -7,108 +7,376 @@ export async function seedRewards(dataSource: DataSource) {
   const rewardRepository = dataSource.getRepository(Reward);
 
   const rewards = [
+    // ========================================
+    // RACHAS (STREAK)
+    // ========================================
+    
+    // STARTER
     {
-      code: 'streak_7',
-      name: 'Semana Completa',
-      description: 'Completa un hábito 7 días seguidos',
+      code: 'streak_1_starter',
+      name: 'Primer Paso',
+      description: 'Completa tu primer día de hábito',
       type: RewardType.STREAK,
-      tier: RewardTier.COMMON,
-      icon: '🔥',
-      requirement: 7,
+      tier: RewardTier.STARTER,
+      icon: '10', // Carpeta de la gema
+      requirement: 1,
       orderIndex: 1,
     },
+    
+    // COMMON
     {
-      code: 'streak_30',
-      name: 'Mes Completo',
-      description: 'Completa un hábito 30 días seguidos',
+      code: 'streak_3_common',
+      name: 'Arranque',
+      description: 'Mantén un hábito por 3 días consecutivos',
       type: RewardType.STREAK,
-      tier: RewardTier.RARE,
-      icon: '💪',
-      requirement: 30,
+      tier: RewardTier.COMMON,
+      icon: '9',
+      requirement: 3,
       orderIndex: 2,
     },
+    
+    // UNCOMMON
     {
-      code: 'streak_100',
-      name: 'Centenario',
-      description: 'Completa un hábito 100 días seguidos',
+      code: 'streak_7_uncommon',
+      name: 'Semana Completa',
+      description: 'Mantén un hábito por 7 días consecutivos',
       type: RewardType.STREAK,
-      tier: RewardTier.EPIC,
-      icon: '⭐',
-      requirement: 100,
+      tier: RewardTier.UNCOMMON,
+      icon: '8',
+      requirement: 7,
       orderIndex: 3,
     },
+    
+    // RARE
     {
-      code: 'streak_365',
-      name: 'Año Completo',
-      description: 'Completa un hábito 365 días seguidos',
+      code: 'streak_14_rare',
+      name: 'Dos Semanas',
+      description: 'Mantén un hábito por 14 días consecutivos',
       type: RewardType.STREAK,
-      tier: RewardTier.LEGENDARY,
-      icon: '🏆',
-      requirement: 365,
+      tier: RewardTier.RARE,
+      icon: '7',
+      requirement: 14,
       orderIndex: 4,
     },
-
+    
+    // RARE_PLUS
     {
-      code: 'habit_count_1',
-      name: 'Primer Paso',
-      description: 'Crea tu primer hábito',
-      type: RewardType.HABIT_COUNT,
-      tier: RewardTier.COMMON,
-      icon: '🎯',
-      requirement: 1,
+      code: 'streak_21_rare_plus',
+      name: 'Hábito Formado',
+      description: 'Mantén un hábito por 21 días consecutivos',
+      type: RewardType.STREAK,
+      tier: RewardTier.RARE_PLUS,
+      icon: '6',
+      requirement: 21,
       orderIndex: 5,
     },
+    
+    // EPIC
     {
-      code: 'habit_count_5',
-      name: 'Coleccionista',
-      description: 'Crea 5 hábitos',
-      type: RewardType.HABIT_COUNT,
-      tier: RewardTier.UNCOMMON,
-      icon: '📚',
-      requirement: 5,
+      code: 'streak_30_epic',
+      name: 'Mes de Hierro',
+      description: 'Mantén un hábito por 30 días consecutivos',
+      type: RewardType.STREAK,
+      tier: RewardTier.EPIC,
+      icon: '5',
+      requirement: 30,
       orderIndex: 6,
     },
+    
+    // EPIC_PLUS
     {
-      code: 'habit_count_10',
-      name: 'Maestro de Hábitos',
-      description: 'Crea 10 hábitos',
-      type: RewardType.HABIT_COUNT,
-      tier: RewardTier.RARE,
-      icon: '👑',
-      requirement: 10,
+      code: 'streak_60_epic_plus',
+      name: 'Bimestre Perfecto',
+      description: 'Mantén un hábito por 60 días consecutivos',
+      type: RewardType.STREAK,
+      tier: RewardTier.EPIC_PLUS,
+      icon: '4',
+      requirement: 60,
       orderIndex: 7,
     },
-
-    // Insignias de completados totales
+    
+    // LEGENDARY
     {
-      code: 'total_50',
-      name: 'Principiante',
-      description: 'Completa 50 hábitos en total',
-      type: RewardType.TOTAL_COMPLETIONS,
-      tier: RewardTier.COMMON,
-      icon: '🌱',
-      requirement: 50,
+      code: 'streak_100_legendary',
+      name: 'Centenario',
+      description: 'Mantén un hábito por 100 días consecutivos',
+      type: RewardType.STREAK,
+      tier: RewardTier.LEGENDARY,
+      icon: '3',
+      requirement: 100,
       orderIndex: 8,
     },
+    
+    // MYTHIC
     {
-      code: 'total_100',
-      name: 'Comprometido',
-      description: 'Completa 100 hábitos en total',
-      type: RewardType.TOTAL_COMPLETIONS,
-      tier: RewardTier.UNCOMMON,
-      icon: '🚀',
-      requirement: 100,
+      code: 'streak_200_mythic',
+      name: 'Bicentenario',
+      description: 'Mantén un hábito por 200 días consecutivos',
+      type: RewardType.STREAK,
+      tier: RewardTier.MYTHIC,
+      icon: '2',
+      requirement: 200,
       orderIndex: 9,
     },
+    
+    // ULTIMATE
     {
-      code: 'total_500',
-      name: 'Imparable',
-      description: 'Completa 500 hábitos en total',
+      code: 'streak_365_ultimate',
+      name: 'Año Perfecto',
+      description: 'Mantén un hábito por 365 días consecutivos',
+      type: RewardType.STREAK,
+      tier: RewardTier.ULTIMATE,
+      icon: '1',
+      requirement: 365,
+      orderIndex: 10,
+    },
+
+    // ========================================
+    // HÁBITOS CREADOS (HABIT_COUNT)
+    // ========================================
+    
+    // STARTER
+    {
+      code: 'habit_1_starter',
+      name: 'Primer Hábito',
+      description: 'Crea tu primer hábito',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.STARTER,
+      icon: '10',
+      requirement: 1,
+      orderIndex: 11,
+    },
+    
+    // COMMON
+    {
+      code: 'habit_2_common',
+      name: 'Doble Compromiso',
+      description: 'Crea 2 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.COMMON,
+      icon: '9',
+      requirement: 2,
+      orderIndex: 12,
+    },
+    
+    // UNCOMMON
+    {
+      code: 'habit_3_uncommon',
+      name: 'Diversificación',
+      description: 'Crea 3 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.UNCOMMON,
+      icon: '8',
+      requirement: 3,
+      orderIndex: 13,
+    },
+    
+    // RARE
+    {
+      code: 'habit_4_rare',
+      name: 'Cuatro Pilares',
+      description: 'Crea 4 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.RARE,
+      icon: '7',
+      requirement: 4,
+      orderIndex: 14,
+    },
+    
+    // RARE_PLUS
+    {
+      code: 'habit_5_rare_plus',
+      name: 'Cinco Fuerzas',
+      description: 'Crea 5 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.RARE_PLUS,
+      icon: '6',
+      requirement: 5,
+      orderIndex: 15,
+    },
+    
+    // EPIC
+    {
+      code: 'habit_7_epic',
+      name: 'Semana de Hábitos',
+      description: 'Crea 7 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.EPIC,
+      icon: '5',
+      requirement: 7,
+      orderIndex: 16,
+    },
+    
+    // EPIC_PLUS
+    {
+      code: 'habit_8_epic_plus',
+      name: 'Octágono Perfecto',
+      description: 'Crea 8 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.EPIC_PLUS,
+      icon: '4',
+      requirement: 8,
+      orderIndex: 17,
+    },
+    
+    // LEGENDARY
+    {
+      code: 'habit_10_legendary',
+      name: 'Decálogo',
+      description: 'Crea 10 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.LEGENDARY,
+      icon: '3',
+      requirement: 10,
+      orderIndex: 18,
+    },
+    
+    // MYTHIC
+    {
+      code: 'habit_12_mythic',
+      name: 'Doce Meses',
+      description: 'Crea 12 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.MYTHIC,
+      icon: '2',
+      requirement: 12,
+      orderIndex: 19,
+    },
+    
+    // ULTIMATE
+    {
+      code: 'habit_15_ultimate',
+      name: 'Maestro de Hábitos',
+      description: 'Crea 15 hábitos',
+      type: RewardType.HABIT_COUNT,
+      tier: RewardTier.ULTIMATE,
+      icon: '1',
+      requirement: 15,
+      orderIndex: 20,
+    },
+
+    // ========================================
+    // COMPLETACIONES TOTALES (TOTAL_COMPLETIONS)
+    // ========================================
+    
+    // STARTER
+    {
+      code: 'completion_1_starter',
+      name: 'Primera Vez',
+      description: 'Completa tu primera tarea',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.STARTER,
+      icon: '10',
+      requirement: 1,
+      orderIndex: 21,
+    },
+    
+    // COMMON
+    {
+      code: 'completion_5_common',
+      name: 'Cinco Veces',
+      description: 'Completa 5 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.COMMON,
+      icon: '9',
+      requirement: 5,
+      orderIndex: 22,
+    },
+    
+    // UNCOMMON
+    {
+      code: 'completion_10_uncommon',
+      name: 'Decena',
+      description: 'Completa 10 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.UNCOMMON,
+      icon: '8',
+      requirement: 10,
+      orderIndex: 23,
+    },
+    
+    // RARE
+    {
+      code: 'completion_25_rare',
+      name: 'Veinticinco',
+      description: 'Completa 25 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.RARE,
+      icon: '7',
+      requirement: 25,
+      orderIndex: 24,
+    },
+    
+    // RARE_PLUS
+    {
+      code: 'completion_50_rare_plus',
+      name: 'Medio Centenar',
+      description: 'Completa 50 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.RARE_PLUS,
+      icon: '6',
+      requirement: 50,
+      orderIndex: 25,
+    },
+    
+    // EPIC
+    {
+      code: 'completion_100_epic',
+      name: 'Centenar',
+      description: 'Completa 100 tareas',
       type: RewardType.TOTAL_COMPLETIONS,
       tier: RewardTier.EPIC,
-      icon: '💎',
+      icon: '5',
+      requirement: 100,
+      orderIndex: 26,
+    },
+    
+    // EPIC_PLUS
+    {
+      code: 'completion_200_epic_plus',
+      name: 'Bicentenario',
+      description: 'Completa 200 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.EPIC_PLUS,
+      icon: '4',
+      requirement: 200,
+      orderIndex: 27,
+    },
+    
+    // LEGENDARY
+    {
+      code: 'completion_365_legendary',
+      name: 'Año de Compromiso',
+      description: 'Completa 365 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.LEGENDARY,
+      icon: '3',
+      requirement: 365,
+      orderIndex: 28,
+    },
+    
+    // MYTHIC
+    {
+      code: 'completion_500_mythic',
+      name: 'Medio Millar',
+      description: 'Completa 500 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.MYTHIC,
+      icon: '2',
       requirement: 500,
-      orderIndex: 10,
+      orderIndex: 29,
+    },
+    
+    // ULTIMATE
+    {
+      code: 'completion_1000_ultimate',
+      name: 'Millar Perfecto',
+      description: 'Completa 1000 tareas',
+      type: RewardType.TOTAL_COMPLETIONS,
+      tier: RewardTier.ULTIMATE,
+      icon: '1',
+      requirement: 1000,
+      orderIndex: 30,
     },
   ];
 
