@@ -29,19 +29,33 @@ export class RewardService {
 
   // Obtener insignias del usuario con su progreso
   async getUserRewards(userId: string) {
-    const allRewards = await this.getAllRewards();
     const earnedRewards = await this.userRewardRepository.find({
       where: { user: { id: userId } },
       relations: ['reward'],
     });
 
-    const earnedRewardIds = new Set(earnedRewards.map((ur) => ur.reward.id));
+    // Agrupar por rewardId y contar ocurrencias
+    const rewardCountMap = new Map<string, { reward: any; count: number; earnedAt: Date }>();
+    
+    earnedRewards.forEach((userReward) => {
+      const rewardId = userReward.reward.id;
+      if (rewardCountMap.has(rewardId)) {
+        const existing = rewardCountMap.get(rewardId)!;
+        existing.count += 1;
+      } else {
+        rewardCountMap.set(rewardId, {
+          reward: userReward.reward,
+          count: 1,
+          earnedAt: userReward.earnedAt,
+        });
+      }
+    });
 
-    return allRewards.map((reward) => ({
+    // Convertir a array con contador
+    return Array.from(rewardCountMap.values()).map(({ reward, count, earnedAt }) => ({
       ...reward,
-      earned: earnedRewardIds.has(reward.id),
-      earnedAt: earnedRewards.find((ur) => ur.reward.id === reward.id)
-        ?.earnedAt,
+      count,
+      earnedAt,
     }));
   }
 
@@ -74,40 +88,44 @@ export class RewardService {
     habitId: string | undefined,
     newRewards: UserReward[],
   ) {
-    const habits = habitId
-      ? await this.habitRepository.find({
-          where: { id: habitId, user: { id: userId } },
-        })
-      : await this.habitRepository.find({
-          where: { user: { id: userId } },
+    // Obtener todos los hábitos del usuario
+    const habits = await this.habitRepository.find({
+      where: { user: { id: userId } },
+    });
+
+    // Calcular el streak máximo del usuario
+    let maxStreak = 0;
+    for (const habit of habits) {
+      if (habit.streak > maxStreak) {
+        maxStreak = habit.streak;
+      }
+    }
+
+    // Obtener todas las recompensas de streak
+    const streakRewards = await this.rewardRepository.find({
+      where: { type: RewardType.STREAK, isActive: true },
+    });
+
+    // Verificar cada recompensa de streak
+    for (const reward of streakRewards) {
+      if (maxStreak >= reward.requirement) {
+        // Contar cuántas veces ya se obtuvo esta recompensa
+        const earnedCount = await this.userRewardRepository.count({
+          where: {
+            user: { id: userId },
+            reward: { id: reward.id },
+          },
         });
 
-    for (const habit of habits) {
-      const streakRewards = await this.rewardRepository.find({
-        where: { type: RewardType.STREAK, isActive: true },
-      });
-
-      for (const reward of streakRewards) {
-        if (habit.streak >= reward.requirement) {
-          const alreadyEarned = await this.userRewardRepository.findOne({
-            where: {
-              user: { id: userId },
-              reward: { id: reward.id },
-              relatedHabitId: habit.id,
-            },
-          });
-
-          if (!alreadyEarned) {
-            const userReward = this.userRewardRepository.create({
-              user: { id: userId } as any,
-              reward,
-              relatedHabitId: habit.id,
-              viewed: false,
-            });
-            const saved = await this.userRewardRepository.save(userReward);
-            newRewards.push(saved);
-          }
-        }
+        // Permitir obtener la misma gema múltiples veces (sin límite)
+        // Solo agregar si el streak alcanza el requisito
+        const userReward = this.userRewardRepository.create({
+          user: { id: userId } as any,
+          reward,
+          viewed: false,
+        });
+        const saved = await this.userRewardRepository.save(userReward);
+        newRewards.push(saved);
       }
     }
   }

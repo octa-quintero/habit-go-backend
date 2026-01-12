@@ -6,376 +6,358 @@ import { RewardTier } from '../module/reward/enums/rewards-tier.enum';
 export async function seedRewards(dataSource: DataSource) {
   const rewardRepository = dataSource.getRepository(Reward);
 
+  // Eliminar todas las recompensas antiguas (y las relaciones en user_rewards con CASCADE)
+  console.log('🗑️  Eliminando recompensas antiguas y relaciones...');
+  await dataSource.query('TRUNCATE TABLE "user_rewards" CASCADE');
+  await dataSource.query('TRUNCATE TABLE "rewards" CASCADE');
+  console.log('✅ Tablas limpiadas');
+
   const rewards = [
     // ========================================
-    // RACHAS (STREAK)
+    // MES 1: GEMAS BÁSICAS (Variant 3)
+    // Días 1-30: Una gema cada 3 días
     // ========================================
     
-    // STARTER
     {
-      code: 'streak_1_starter',
-      name: 'Primer Paso',
-      description: 'Completa tu primer día de hábito',
+      code: 'streak_day_3_gem10_v3',
+      name: '🔥 Tres Días',
+      description: '¡Primera gema conseguida!',
       type: RewardType.STREAK,
       tier: RewardTier.STARTER,
-      icon: '10', // Carpeta de la gema
-      requirement: 1,
+      icon: '10',
+      variant: 3,
+      requirement: 3,
       orderIndex: 1,
     },
-    
-    // COMMON
     {
-      code: 'streak_3_common',
-      name: 'Arranque',
-      description: 'Mantén un hábito por 3 días consecutivos',
+      code: 'streak_day_6_gem9_v3',
+      name: '🔥 Seis Días',
+      description: '¡Segunda gema desbloqueada!',
       type: RewardType.STREAK,
       tier: RewardTier.COMMON,
       icon: '9',
-      requirement: 3,
+      variant: 3,
+      requirement: 6,
       orderIndex: 2,
     },
-    
-    // UNCOMMON
     {
-      code: 'streak_7_uncommon',
-      name: 'Semana Completa',
-      description: 'Mantén un hábito por 7 días consecutivos',
+      code: 'streak_day_9_gem8_v3',
+      name: '🔥 Nueve Días',
+      description: '¡Tercera gema en tu poder!',
       type: RewardType.STREAK,
       tier: RewardTier.UNCOMMON,
       icon: '8',
-      requirement: 7,
+      variant: 3,
+      requirement: 9,
       orderIndex: 3,
     },
-    
-    // RARE
     {
-      code: 'streak_14_rare',
-      name: 'Dos Semanas',
-      description: 'Mantén un hábito por 14 días consecutivos',
+      code: 'streak_day_12_gem7_v3',
+      name: '🔥 Doce Días',
+      description: '¡Cuarta gema brillando!',
       type: RewardType.STREAK,
       tier: RewardTier.RARE,
       icon: '7',
-      requirement: 14,
+      variant: 3,
+      requirement: 12,
       orderIndex: 4,
     },
-    
-    // RARE_PLUS
     {
-      code: 'streak_21_rare_plus',
-      name: 'Hábito Formado',
-      description: 'Mantén un hábito por 21 días consecutivos',
+      code: 'streak_day_15_gem6_v3',
+      name: '🔥 Quince Días',
+      description: '¡Quinta gema alcanzada!',
       type: RewardType.STREAK,
       tier: RewardTier.RARE_PLUS,
       icon: '6',
-      requirement: 21,
+      variant: 3,
+      requirement: 15,
       orderIndex: 5,
     },
-    
-    // EPIC
     {
-      code: 'streak_30_epic',
-      name: 'Mes de Hierro',
-      description: 'Mantén un hábito por 30 días consecutivos',
+      code: 'streak_day_18_gem5_v3',
+      name: '🔥 Dieciocho Días',
+      description: '¡Sexta gema conquistada!',
       type: RewardType.STREAK,
       tier: RewardTier.EPIC,
       icon: '5',
-      requirement: 30,
+      variant: 3,
+      requirement: 18,
       orderIndex: 6,
     },
-    
-    // EPIC_PLUS
     {
-      code: 'streak_60_epic_plus',
-      name: 'Bimestre Perfecto',
-      description: 'Mantén un hábito por 60 días consecutivos',
+      code: 'streak_day_21_gem4_v3',
+      name: '🔥 Veintiún Días',
+      description: '¡Séptima gema ganada!',
       type: RewardType.STREAK,
       tier: RewardTier.EPIC_PLUS,
       icon: '4',
-      requirement: 60,
+      variant: 3,
+      requirement: 21,
       orderIndex: 7,
     },
-    
-    // LEGENDARY
     {
-      code: 'streak_100_legendary',
-      name: 'Centenario',
-      description: 'Mantén un hábito por 100 días consecutivos',
+      code: 'streak_day_24_gem3_v3',
+      name: '🔥 Veinticuatro Días',
+      description: '¡Octava gema obtenida!',
       type: RewardType.STREAK,
       tier: RewardTier.LEGENDARY,
       icon: '3',
-      requirement: 100,
+      variant: 3,
+      requirement: 24,
       orderIndex: 8,
     },
-    
-    // MYTHIC
     {
-      code: 'streak_200_mythic',
-      name: 'Bicentenario',
-      description: 'Mantén un hábito por 200 días consecutivos',
+      code: 'streak_day_27_gem2_v3',
+      name: '🔥 Veintisiete Días',
+      description: '¡Novena gema desbloqueada!',
       type: RewardType.STREAK,
       tier: RewardTier.MYTHIC,
       icon: '2',
-      requirement: 200,
+      variant: 3,
+      requirement: 27,
       orderIndex: 9,
     },
-    
-    // ULTIMATE
     {
-      code: 'streak_365_ultimate',
-      name: 'Año Perfecto',
-      description: 'Mantén un hábito por 365 días consecutivos',
+      code: 'streak_day_30_gem1_v3',
+      name: '🎉 Mes 1 Completo',
+      description: '¡Primera colección completa!',
       type: RewardType.STREAK,
       tier: RewardTier.ULTIMATE,
       icon: '1',
-      requirement: 365,
+      variant: 3,
+      requirement: 30,
       orderIndex: 10,
     },
 
     // ========================================
-    // HÁBITOS CREADOS (HABIT_COUNT)
+    // MES 2: GEMAS MEJORADAS (Variant 2)
+    // Días 31-60: Una gema cada 3 días
     // ========================================
     
-    // STARTER
     {
-      code: 'habit_1_starter',
-      name: 'Primer Hábito',
-      description: 'Crea tu primer hábito',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_33_gem10_v2',
+      name: '💎 Día 33',
+      description: '¡Gema mejorada nivel 2!',
+      type: RewardType.STREAK,
       tier: RewardTier.STARTER,
       icon: '10',
-      requirement: 1,
+      variant: 2,
+      requirement: 33,
       orderIndex: 11,
     },
-    
-    // COMMON
     {
-      code: 'habit_2_common',
-      name: 'Doble Compromiso',
-      description: 'Crea 2 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_36_gem9_v2',
+      name: '💎 Día 36',
+      description: '¡Segunda gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.COMMON,
       icon: '9',
-      requirement: 2,
+      variant: 2,
+      requirement: 36,
       orderIndex: 12,
     },
-    
-    // UNCOMMON
     {
-      code: 'habit_3_uncommon',
-      name: 'Diversificación',
-      description: 'Crea 3 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_39_gem8_v2',
+      name: '💎 Día 39',
+      description: '¡Tercera gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.UNCOMMON,
       icon: '8',
-      requirement: 3,
+      variant: 2,
+      requirement: 39,
       orderIndex: 13,
     },
-    
-    // RARE
     {
-      code: 'habit_4_rare',
-      name: 'Cuatro Pilares',
-      description: 'Crea 4 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_42_gem7_v2',
+      name: '💎 Día 42',
+      description: '¡Cuarta gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.RARE,
       icon: '7',
-      requirement: 4,
+      variant: 2,
+      requirement: 42,
       orderIndex: 14,
     },
-    
-    // RARE_PLUS
     {
-      code: 'habit_5_rare_plus',
-      name: 'Cinco Fuerzas',
-      description: 'Crea 5 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_45_gem6_v2',
+      name: '💎 Día 45',
+      description: '¡Quinta gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.RARE_PLUS,
       icon: '6',
-      requirement: 5,
+      variant: 2,
+      requirement: 45,
       orderIndex: 15,
     },
-    
-    // EPIC
     {
-      code: 'habit_7_epic',
-      name: 'Semana de Hábitos',
-      description: 'Crea 7 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_48_gem5_v2',
+      name: '💎 Día 48',
+      description: '¡Sexta gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.EPIC,
       icon: '5',
-      requirement: 7,
+      variant: 2,
+      requirement: 48,
       orderIndex: 16,
     },
-    
-    // EPIC_PLUS
     {
-      code: 'habit_8_epic_plus',
-      name: 'Octágono Perfecto',
-      description: 'Crea 8 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_51_gem4_v2',
+      name: '💎 Día 51',
+      description: '¡Séptima gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.EPIC_PLUS,
       icon: '4',
-      requirement: 8,
+      variant: 2,
+      requirement: 51,
       orderIndex: 17,
     },
-    
-    // LEGENDARY
     {
-      code: 'habit_10_legendary',
-      name: 'Decálogo',
-      description: 'Crea 10 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_54_gem3_v2',
+      name: '💎 Día 54',
+      description: '¡Octava gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.LEGENDARY,
       icon: '3',
-      requirement: 10,
+      variant: 2,
+      requirement: 54,
       orderIndex: 18,
     },
-    
-    // MYTHIC
     {
-      code: 'habit_12_mythic',
-      name: 'Doce Meses',
-      description: 'Crea 12 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_57_gem2_v2',
+      name: '💎 Día 57',
+      description: '¡Novena gema mejorada!',
+      type: RewardType.STREAK,
       tier: RewardTier.MYTHIC,
       icon: '2',
-      requirement: 12,
+      variant: 2,
+      requirement: 57,
       orderIndex: 19,
     },
-    
-    // ULTIMATE
     {
-      code: 'habit_15_ultimate',
-      name: 'Maestro de Hábitos',
-      description: 'Crea 15 hábitos',
-      type: RewardType.HABIT_COUNT,
+      code: 'streak_day_60_gem1_v2',
+      name: '🎊 Mes 2 Completo',
+      description: '¡Segunda colección completa!',
+      type: RewardType.STREAK,
       tier: RewardTier.ULTIMATE,
       icon: '1',
-      requirement: 15,
+      variant: 2,
+      requirement: 60,
       orderIndex: 20,
     },
 
     // ========================================
-    // COMPLETACIONES TOTALES (TOTAL_COMPLETIONS)
+    // MES 3: GEMAS SUPREMAS (Variant 1)
+    // Días 61-90: Una gema cada 3 días
     // ========================================
     
-    // STARTER
     {
-      code: 'completion_1_starter',
-      name: 'Primera Vez',
-      description: 'Completa tu primera tarea',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_63_gem10_v1',
+      name: '⭐ Día 63',
+      description: '¡Gema suprema conseguida!',
+      type: RewardType.STREAK,
       tier: RewardTier.STARTER,
       icon: '10',
-      requirement: 1,
+      variant: 1,
+      requirement: 63,
       orderIndex: 21,
     },
-    
-    // COMMON
     {
-      code: 'completion_5_common',
-      name: 'Cinco Veces',
-      description: 'Completa 5 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_66_gem9_v1',
+      name: '⭐ Día 66',
+      description: '¡Segunda gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.COMMON,
       icon: '9',
-      requirement: 5,
+      variant: 1,
+      requirement: 66,
       orderIndex: 22,
     },
-    
-    // UNCOMMON
     {
-      code: 'completion_10_uncommon',
-      name: 'Decena',
-      description: 'Completa 10 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_69_gem8_v1',
+      name: '⭐ Día 69',
+      description: '¡Tercera gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.UNCOMMON,
       icon: '8',
-      requirement: 10,
+      variant: 1,
+      requirement: 69,
       orderIndex: 23,
     },
-    
-    // RARE
     {
-      code: 'completion_25_rare',
-      name: 'Veinticinco',
-      description: 'Completa 25 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_72_gem7_v1',
+      name: '⭐ Día 72',
+      description: '¡Cuarta gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.RARE,
       icon: '7',
-      requirement: 25,
+      variant: 1,
+      requirement: 72,
       orderIndex: 24,
     },
-    
-    // RARE_PLUS
     {
-      code: 'completion_50_rare_plus',
-      name: 'Medio Centenar',
-      description: 'Completa 50 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_75_gem6_v1',
+      name: '⭐ Día 75',
+      description: '¡Quinta gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.RARE_PLUS,
       icon: '6',
-      requirement: 50,
+      variant: 1,
+      requirement: 75,
       orderIndex: 25,
     },
-    
-    // EPIC
     {
-      code: 'completion_100_epic',
-      name: 'Centenar',
-      description: 'Completa 100 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_78_gem5_v1',
+      name: '⭐ Día 78',
+      description: '¡Sexta gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.EPIC,
       icon: '5',
-      requirement: 100,
+      variant: 1,
+      requirement: 78,
       orderIndex: 26,
     },
-    
-    // EPIC_PLUS
     {
-      code: 'completion_200_epic_plus',
-      name: 'Bicentenario',
-      description: 'Completa 200 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_81_gem4_v1',
+      name: '⭐ Día 81',
+      description: '¡Séptima gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.EPIC_PLUS,
       icon: '4',
-      requirement: 200,
+      variant: 1,
+      requirement: 81,
       orderIndex: 27,
     },
-    
-    // LEGENDARY
     {
-      code: 'completion_365_legendary',
-      name: 'Año de Compromiso',
-      description: 'Completa 365 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_84_gem3_v1',
+      name: '⭐ Día 84',
+      description: '¡Octava gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.LEGENDARY,
       icon: '3',
-      requirement: 365,
+      variant: 1,
+      requirement: 84,
       orderIndex: 28,
     },
-    
-    // MYTHIC
     {
-      code: 'completion_500_mythic',
-      name: 'Medio Millar',
-      description: 'Completa 500 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_87_gem2_v1',
+      name: '⭐ Día 87',
+      description: '¡Novena gema suprema!',
+      type: RewardType.STREAK,
       tier: RewardTier.MYTHIC,
       icon: '2',
-      requirement: 500,
+      variant: 1,
+      requirement: 87,
       orderIndex: 29,
     },
-    
-    // ULTIMATE
     {
-      code: 'completion_1000_ultimate',
-      name: 'Millar Perfecto',
-      description: 'Completa 1000 tareas',
-      type: RewardType.TOTAL_COMPLETIONS,
+      code: 'streak_day_90_gem1_v1',
+      name: '👑 MAESTRO ABSOLUTO',
+      description: '¡LA GEMA MÁS VALIOSA! ¡90 DÍAS PERFECTOS!',
+      type: RewardType.STREAK,
       tier: RewardTier.ULTIMATE,
       icon: '1',
-      requirement: 1000,
+      variant: 1,
+      requirement: 90,
       orderIndex: 30,
     },
   ];

@@ -31,6 +31,9 @@ export class Reward {
   @Column()
   icon: string; // "🔥", "⭐", "🏆"
 
+  @Column({ nullable: true })
+  variant: number; // 1, 2, 3 para las diferentes versiones de gemas
+
   @Column()
   requirement: number; // 7, 30, 100, etc.
 
