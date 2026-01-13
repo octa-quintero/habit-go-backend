@@ -38,14 +38,42 @@ export class UsersController {
     return this.usersService.findAllUsers(Number(page), Number(limit));
   }
 
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  async getProfile(@Request() req: RequestWithUser) {
+    return this.usersService.findOneUser(req.user.userId);
+  }
+
+  @Get('me/stats')
+  @UseGuards(JwtAuthGuard)
+  async getStats(@Request() req: RequestWithUser) {
+    return this.usersService.getUserStats(req.user.userId);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.usersService.findOneUser(id);
   }
 
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @Request() req: RequestWithUser,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.updateUser(req.user.userId, updateUserDto);
+  }
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.updateUser(id, updateUserDto);
+  }
+
+  @Delete('me')
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  async deleteProfile(@Request() req: RequestWithUser) {
+    return this.usersService.softDeleteUser(req.user.userId);
   }
 
   @Delete(':id')
@@ -67,33 +95,5 @@ export class UsersController {
       verifyEmailDto.email,
       verifyEmailDto.token,
     );
-  }
-
-  @Get('me')
-  @UseGuards(JwtAuthGuard)
-  async getProfile(@Request() req: RequestWithUser) {
-    return this.usersService.findOneUser(req.user.userId);
-  }
-
-  @Patch('me')
-  @UseGuards(JwtAuthGuard)
-  async updateProfile(
-    @Request() req: RequestWithUser,
-    @Body() updateUserDto: UpdateUserDto,
-  ) {
-    return this.usersService.updateUser(req.user.userId, updateUserDto);
-  }
-
-  @Delete('me')
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  async deleteProfile(@Request() req: RequestWithUser) {
-    return this.usersService.softDeleteUser(req.user.userId);
-  }
-
-  @Get('me/stats')
-  @UseGuards(JwtAuthGuard)
-  async getStats(@Request() req: RequestWithUser) {
-    return this.usersService.getUserStats(req.user.userId);
   }
 }
