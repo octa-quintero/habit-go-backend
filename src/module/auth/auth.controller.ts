@@ -40,8 +40,9 @@ export class AuthController {
   async googleAuthCallback(@Req() req: any, @Res() res: Response) {
     const result = await this.authService.googleLogin(req.user);
 
-    // Redirigir al frontend con el token
-    const redirectUrl = `${config.FRONTEND_URL}/auth/callback?token=${result.accessToken}`;
+    // Redirigir al frontend con el token y userData
+    const userDataEncoded = encodeURIComponent(JSON.stringify(result.userData));
+    const redirectUrl = `${config.FRONTEND_URL}/auth/callback?token=${result.accessToken}&userData=${userDataEncoded}`;
     res.redirect(redirectUrl);
   }
 

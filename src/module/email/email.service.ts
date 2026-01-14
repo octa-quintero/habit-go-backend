@@ -39,7 +39,7 @@ export class EmailService {
   }
 
   async sendPasswordResetEmail(to: string, name: string, token: string) {
-    const resetUrl = `${config.FRONTEND_URL}/reset-password?token=${token}&email=${encodeURIComponent(to)}`;
+    const resetUrl = `${config.FRONTEND_URL}/auth/reset-password?token=${token}&email=${encodeURIComponent(to)}`;
 
     await this.transporter.sendMail({
       from: `"${config.EMAIL_FROM_NAME}" <${config.EMAIL_USER}>`,
