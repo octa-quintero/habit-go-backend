@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Habit } from '../habits/entities/habit.entity';
@@ -27,40 +23,53 @@ export class HabitRegisterService {
 
     if (!habit) return;
 
-    // MODO TESTING: Contar total de registros en lugar de días consecutivos
-    const totalRegisters = await this.habitRegisterRepository.count({
-      where: { habit: { id: habitId }, completed: true },
-    });
-
-    // Actualizar hábito con el total de completaciones
-    habit.streak = totalRegisters;
-    habit.longestStreak = Math.max(habit.longestStreak, totalRegisters);
-
-    await this.habitRepository.save(habit);
-    
-    /* LÓGICA ORIGINAL - Descomentar cuando termines el testing
     // Obtener registros ordenados por fecha descendente
     const registers = await this.habitRegisterRepository.find({
       where: { habit: { id: habitId }, completed: true },
       order: { date: 'DESC' },
     });
 
-    if (registers.length === 0) return;
+    if (registers.length === 0) {
+      habit.streak = 0;
+      await this.habitRepository.save(habit);
+      return;
+    }
 
-    // Calcular streak actual
+    // Normalizar fecha actual (medianoche UTC)
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+
+    // Calcular streak actual (días consecutivos desde hoy o ayer)
     let currentStreak = 0;
+    const checkDate = new Date(today);
 
+    // Verificar si se completó hoy
+    const todayStr = this.formatDate(today);
+    const completedToday = registers.some((r) => r.date === todayStr);
+
+    // Si no se completó hoy, empezar desde ayer
+    if (!completedToday) {
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    // Contar días consecutivos hacia atrás
     for (let i = 0; i < registers.length; i++) {
+      const expectedDateStr = this.formatDate(checkDate);
       const registerDate = registers[i].date;
-      const expectedDate = new Date();
-      expectedDate.setDate(expectedDate.getDate() - i);
-      const expectedDateStr = expectedDate.toISOString().split('T')[0];
 
       if (registerDate === expectedDateStr) {
         currentStreak++;
-      } else {
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else if (registerDate < expectedDateStr) {
+        // Si encontramos una fecha más antigua, el streak se rompió
         break;
       }
+      // Si registerDate > expectedDateStr, continuamos buscando
+    }
+
+    // Validar que el streak calculado sea correcto
+    if (currentStreak < 0) {
+      currentStreak = 0;
     }
 
     // Actualizar hábito
@@ -68,7 +77,14 @@ export class HabitRegisterService {
     habit.longestStreak = Math.max(habit.longestStreak, currentStreak);
 
     await this.habitRepository.save(habit);
-    */
+  }
+
+  private formatDate(date: Date): string {
+    // Formatear fecha como YYYY-MM-DD en UTC
+    const year = date.getUTCFullYear();
+    const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(date.getUTCDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 
   async markAsCompleted(
@@ -87,14 +103,14 @@ export class HabitRegisterService {
     }
 
     // Verificar que no se haya completado hoy
-    const today = new Date().toISOString().split('T')[0]; // 'YYYY-MM-DD'
+    const today = new Date();
+    today.setUTCHours(0, 0, 0, 0);
+    const todayStr = this.formatDate(today);
 
-    // COMENTADO PARA TESTING - Permitir múltiples completaciones por día
-    /*
     const existingRegister = await this.habitRegisterRepository.findOne({
       where: {
         habit: { id: habitId },
-        date: today,
+        date: todayStr,
       },
       relations: ['habit'],
     });
@@ -109,12 +125,11 @@ export class HabitRegisterService {
         alreadyCompleted: true,
       };
     }
-    */
 
     // Crear el registro
     const habitRegister = this.habitRegisterRepository.create({
       habit,
-      date: today,
+      date: todayStr,
       completed: true,
     });
 

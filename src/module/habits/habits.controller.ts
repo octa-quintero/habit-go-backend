@@ -15,6 +15,8 @@ import { HabitsService } from './habits.service';
 import { CreateHabitDto } from './dto/create-habit.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-guards/jwt-auth.guard';
+import { OwnershipGuard } from '../../common/guards/ownership/ownership.guard';
+import { CheckOwnership } from '../../common/guards/ownership/ownership.decorator';
 import { UseGuards } from '@nestjs/common';
 
 @UseGuards(JwtAuthGuard)
@@ -39,12 +41,16 @@ export class HabitsController {
   }
 
   @Get(':id')
+  @UseGuards(OwnershipGuard)
+  @CheckOwnership({ entity: 'habit', paramName: 'id' })
   async findOne(@Request() req: RequestWithUser, @Param('id') id: string) {
     const userId = req.user.userId;
     return this.habitsService.findOneHabit(userId, id);
   }
 
   @Patch(':id')
+  @UseGuards(OwnershipGuard)
+  @CheckOwnership({ entity: 'habit', paramName: 'id' })
   async update(
     @Request() req: RequestWithUser,
     @Param('id') id: string,
@@ -55,6 +61,8 @@ export class HabitsController {
   }
 
   @Delete(':id')
+  @UseGuards(OwnershipGuard)
+  @CheckOwnership({ entity: 'habit', paramName: 'id' })
   @HttpCode(HttpStatus.OK)
   async remove(@Request() req: RequestWithUser, @Param('id') id: string) {
     const userId = req.user.userId;
