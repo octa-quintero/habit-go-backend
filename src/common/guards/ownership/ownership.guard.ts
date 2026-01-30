@@ -38,7 +38,7 @@ export class OwnershipGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
-    if (!user || !user.id) {
+    if (!user || !user.userId) {
       throw new ForbiddenException('Usuario no autenticado');
     }
 
@@ -53,7 +53,7 @@ export class OwnershipGuard implements CanActivate {
     const isOwner = await this.verifyOwnership(
       config.entity,
       resourceId,
-      user.id,
+      user.userId,
     );
 
     if (!isOwner) {
